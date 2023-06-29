@@ -4,6 +4,7 @@ pragma solidity ^0.8.7;
 import "./interfaces/IWooPP.sol";
 import "./interfaces/joeinterfaces/ILBRouter.sol";
 import "./interfaces/kyberinterfaces/IPool.sol";
+import "./interfaces/zyberinterfaces/IZyberRouter02.sol";
 import "forge-std/Test.sol";
 
 contract Swapper {
@@ -17,6 +18,11 @@ contract Swapper {
 
     //KyberSwap Elastic
     address private constant KYBERSWAP1 = 0x33ecc05a09A84aF2153C208EE7E61A31c6B1aDF1;
+
+    // ZyberSwap
+    address private constant ZYBERSWAP = 0x16e71B13fE6079B4312063F7E81F76d165Ad32Ad;
+    IZyberRouter02 private constant ZyberSwap = IZyberRouter02(ZYBERSWAP);
+    address private constant ZYBERSWAPUSDTUSDC = 0x941F4ac07d2526258FC9A07a6C9a23715968B419;
     // Weth
     address private constant WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
     IERC20 private constant Weth = IERC20(WETH);
@@ -29,6 +35,7 @@ contract Swapper {
         IERC20(WETH).approve(WOOPP, type(uint256).max);
         IERC20(WETH).approve(TRADERJOE, type(uint256).max);
         IERC20(WETH).approve(KYBERSWAP1, type(uint256).max);
+        IERC20(USDT).approve(ZYBERSWAP, type(uint256).max);
     }
 
     function woofiExecuteSwap(
@@ -74,5 +81,16 @@ contract Swapper {
 
     function swapCallback(int256 deltaQty0, int256 deltaQty1, bytes calldata data) external {
         Weth.transfer(KYBERSWAP1, uint256(deltaQty0));
+    }
+
+    function zyberExecuteswap(
+        uint256 amountFrom,
+        uint256 minToAmount,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts) {
+        Usdt.transferFrom(msg.sender, address(this), amountFrom);
+        ZyberSwap.swapExactTokensForTokens(amountFrom, 0, path, to, deadline);
     }
 }

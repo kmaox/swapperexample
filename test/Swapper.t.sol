@@ -12,6 +12,8 @@ contract SwapperTest is Test {
     address private constant USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
     IERC20 private constant Usdt = IERC20(USDT);
 
+    address private constant USDC = 0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8;
+
     // 1 eth, 18dp
     uint256 fromAmount = 1 * 1e18;
     // 1800 usdt, 6 dp
@@ -25,6 +27,8 @@ contract SwapperTest is Test {
         vm.startPrank(whale);
         // Approve the Swapper
         Weth.approve(address(swapper), type(uint256).max);
+        Usdt.approve(address(swapper), type(uint256).max);
+        Usdt.approve(0xF942e32861Ee145963503DdB69fC3B0237F0888C, type(uint256).max);
     }
 
     function testWoofiSwap() external {
@@ -62,6 +66,17 @@ contract SwapperTest is Test {
         // MAX_SQRT_RATIO
         (int256 qty0, int256 qty1) =
             swapper.kyberSwapExecuteSwap(kyber1fee, whale, int256(fromAmount), true, MIN_SQRT_RATIO + 1);
-        assert(qty0 > qty1);
+        assert(uint256(qty1 * -1) > minToAmount);
+    }
+
+    function testZyberSwap() external {
+        uint256 amountToSwap = 1800 * 1000000;
+        // 1% slippage here
+        uint256 minToAmount = amountToSwap * 99 / 100;
+        address[] memory path = new address[](2);
+        path[0] = USDT;
+        path[1] = USDC;
+
+        swapper.zyberExecuteswap(amountToSwap, minToAmount, path, whale, block.timestamp + 10);
     }
 }
