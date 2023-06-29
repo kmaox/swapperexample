@@ -3,6 +3,7 @@ pragma solidity ^0.8.7;
 
 import "./interfaces/IWooPP.sol";
 import "./interfaces/joeinterfaces/ILBRouter.sol";
+import "./interfaces/kyberinterfaces/IPool.sol";
 import "forge-std/Test.sol";
 
 contract Swapper {
