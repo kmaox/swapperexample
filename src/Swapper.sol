@@ -34,4 +34,8 @@ contract Swapper {
         Weth.transferFrom(msg.sender, WOOPP, fromAmount);
         return Woofi.swap(fromToken, toToken, fromAmount, minToAmount, to, rebateTo);
     }
+
+    function traderJoeExecuteSwap(uint256 fromAmount, uint256 minToAmount, address to, uint256 deadline) {
+        TraderJoe.swapExactTokensForTokens();
+    }
 }
