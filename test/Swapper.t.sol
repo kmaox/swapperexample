@@ -54,4 +54,14 @@ contract SwapperTest is Test {
             swapper.traderJoeExecuteSwap(fromAmount, minToAmount, path, whale, block.timestamp + 10);
         assert(returnedAmount >= minToAmount);
     }
+
+    function testKyberSwap() external {
+        //uint160 MAX_SQRT_RATIO = 1461446703485210103287273052203988822378723970342;
+        uint160 MIN_SQRT_RATIO = 4295128739;
+        address kyber1fee = 0x33ecc05a09A84aF2153C208EE7E61A31c6B1aDF1;
+        // MAX_SQRT_RATIO
+        (int256 qty0, int256 qty1) =
+            swapper.kyberSwapExecuteSwap(kyber1fee, whale, int256(fromAmount), true, MIN_SQRT_RATIO + 1);
+        assert(qty0 > qty1);
+    }
 }
