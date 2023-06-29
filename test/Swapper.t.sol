@@ -6,8 +6,12 @@ import "../src/Swapper.sol";
 
 contract SwapperTest is Test {
     Swapper swapper;
-    address weth = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
-    address usdt = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
+    address private constant WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
+    IERC20 private constant Weth = IERC20(WETH);
+
+    address private constant USDT = 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9;
+    IERC20 private constant Usdt = IERC20(USDT);
+
     // 1 eth, 18dp
     uint256 fromAmount = 1 * 1e18;
     // 1800 usdt, 6 dp
@@ -20,13 +24,34 @@ contract SwapperTest is Test {
         // Whale on arbitrum with 10+ WETH, used for testing
         vm.startPrank(whale);
         // Approve the Swapper
-        IERC20(weth).approve(address(swapper), type(uint256).max);
+        Weth.approve(address(swapper), type(uint256).max);
     }
 
     function testWoofiSwap() external {
-        uint256 returnedAmount = swapper.woofiExecuteSwap(weth, usdt, fromAmount, minToAmount, payable(whale), whale);
+        uint256 returnedAmount = swapper.woofiExecuteSwap(WETH, USDT, fromAmount, minToAmount, payable(whale), whale);
         assert(returnedAmount >= minToAmount);
     }
 
-    function testTraderJoeSwap() external {}
+    function testTraderJoeSwap() external {
+        // The token path of the swap, weth -> usdt
+        IERC20[] memory tokenPath = new IERC20[](2);
+        tokenPath[0] = Weth;
+        tokenPath[1] = Usdt;
+
+        // The weth - usdt pool is 15 bps
+        uint256[] memory pairBinSteps = new uint256[](1);
+        pairBinSteps[0] = 15;
+
+        ILBRouter.Version[] memory versions = new ILBRouter.Version[](1);
+        versions[0] = ILBRouter.Version.V2_1; // Dex swap is being performed on v2.1
+
+        ILBRouter.Path memory path; // instanciate and populate the path to perform the swap.
+        path.pairBinSteps = pairBinSteps;
+        path.versions = versions;
+        path.tokenPath = tokenPath;
+        console.log(address(swapper));
+        uint256 returnedAmount =
+            swapper.traderJoeExecuteSwap(fromAmount, minToAmount, path, whale, block.timestamp + 10);
+        assert(returnedAmount >= minToAmount);
+    }
 }
