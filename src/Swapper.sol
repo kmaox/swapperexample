@@ -16,11 +16,11 @@ contract Swapper {
 
     address private constant WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1;
     IERC20 private constant Weth = IERC20(WETH);
-    // 10 eth
-    uint256 ethValue = 10000000000000000000;
 
     constructor() {
+        // Approving the various pools the contract is interacting with
         IERC20(WETH).approve(WOOPP, type(uint256).max);
+        IERC20(WETH).approve(TRADERJOE, type(uint256).max);
     }
 
     function woofiExecuteSwap(
